@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Price Predictor</title>
+    <!-- Use a simple, clean font like Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            /* Added the new background image */
+            background-image: url('https://i.postimg.cc/8zq1q7Xf/Screenshot-2025-08-28-232602.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            /* Add an overlay to improve text readability */
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4); /* Dark overlay */
+            z-index: -1;
+        }
+        .container {
+            max-width: 32rem;
+        }
+        .predict-button {
+            transition: all 0.3s ease-in-out;
+        }
+        .predict-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 20px -5px rgba(59, 130, 246, 0.4);
+        }
+        .toggle-switch-label {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+            cursor: pointer;
+        }
+        .toggle-switch-label input {
+            display: none;
+        }
+        .toggle-switch-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #e5e7eb;
+            border: 2px solid #d1d5db;
+            border-radius: 28px;
+            transition: 0.4s;
+        }
+        .toggle-switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 2px;
+            background-color: #6b7280;
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+        input:checked + .toggle-switch-slider {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        input:checked + .toggle-switch-slider:before {
+            transform: translateX(24px);
+            background-color: white;
+        }
+        .input-group label {
+            color: #d1d5db; /* Lighter text for contrast */
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white container, now more transparent */
+            backdrop-filter: blur(10px); /* Add a blur effect for a more modern look */
+        }
+        h1, p.text-center, .input-group label, .toggle-switch-label, .result {
+            color: #1f2937; /* Darker text for readability on the light container */
+        }
+        .result p {
+            color: #1f2937;
+        }
+    </style>
+</head>
+<body class="bg-gray-200 flex items-center justify-center min-h-screen p-4">
+    <div class="container rounded-3xl shadow-2xl p-8 w-full">
+        <!-- Application Header -->
+        <h1 class="text-4xl font-bold text-center mb-2">🏠 House Price Predictor</h1>
+        <p class="text-center text-lg">Your dream home's value, at a glance.</p>
+
+        <!-- Input Form -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+            <!-- Square Footage Input -->
+            <div class="input-group">
+                <label for="sqft" class="block text-sm font-semibold mb-1">Square Footage (Sq. Ft.)</label>
+                <input type="number" id="sqft" placeholder="e.g., 2000" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/60 focus:border-transparent transition duration-200">
+            </div>
+
+            <!-- Floors Input -->
+            <div class="input-group">
+                <label for="floors" class="block text-sm font-semibold mb-1">Number of Floors</label>
+                <input type="number" id="floors" placeholder="e.g., 1" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/60 focus:border-transparent transition duration-200">
+            </div>
+
+            <!-- Bedrooms Input -->
+            <div class="input-group">
+                <label for="bedrooms" class="block text-sm font-semibold mb-1">Number of Bedrooms</label>
+                <select id="bedrooms" class="w-full p-3 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-500/60 focus:border-transparent transition duration-200">
+                    <option value="1">1 Bedroom</option>
+                    <option value="2">2 Bedrooms</option>
+                    <option value="3" selected>3 Bedrooms</option>
+                    <option value="4">4 Bedrooms</option>
+                    <option value="5">5+ Bedrooms</option>
+                </select>
+            </div>
+
+            <!-- Bathrooms Input -->
+            <div class="input-group">
+                <label for="bathrooms" class="block text-sm font-semibold mb-1">Number of Bathrooms</label>
+                <select id="bathrooms" class="w-full p-3 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-500/60 focus:border-transparent transition duration-200">
+                    <option value="1">1 Bathroom</option>
+                    <option value="2" selected>2 Bathrooms</option>
+                    <option value="3">3+ Bathrooms</option>
+                </select>
+            </div>
+
+            <!-- Parking Space Input -->
+            <div class="input-group">
+                <label for="parking_space" class="block text-sm font-semibold mb-1">Parking Space (Sq. Ft.)</label>
+                <input type="number" id="parking_space" placeholder="e.g., 200" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/60 focus:border-transparent transition duration-200">
+            </div>
+
+            <!-- City Input -->
+            <div class="input-group">
+                <label for="city" class="block text-sm font-semibold mb-1">City</label>
+                <input type="text" id="city" placeholder="e.g., Mumbai" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/60 focus:border-transparent transition duration-200">
+            </div>
+        </div>
+
+        <!-- Toggle Switches Section -->
+        <div class="mt-8 space-y-4">
+            <div class="flex items-center justify-between">
+                <label for="main_road" class="text-sm font-semibold text-gray-700">On Main Road?</label>
+                <label class="toggle-switch-label">
+                    <input type="checkbox" id="main_road">
+                    <span class="toggle-switch-slider"></span>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <label for="guest_room" class="text-sm font-semibold text-gray-700">Has Guest Room?</label>
+                <label class="toggle-switch-label">
+                    <input type="checkbox" id="guest_room">
+                    <span class="toggle-switch-slider"></span>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <label for="basement" class="text-sm font-semibold text-gray-700">Has Basement?</label>
+                <label class="toggle-switch-label">
+                    <input type="checkbox" id="basement">
+                    <span class="toggle-switch-slider"></span>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <label for="swimming_pool" class="text-sm font-semibold text-gray-700">Has Swimming Pool?</label>
+                <label class="toggle-switch-label">
+                    <input type="checkbox" id="swimming_pool">
+                    <span class="toggle-switch-slider"></span>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <label for="garden" class="text-sm font-semibold text-gray-700">Has Garden?</label>
+                <label class="toggle-switch-label">
+                    <input type="checkbox" id="garden">
+                    <span class="toggle-switch-slider"></span>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <label for="gym" class="text-sm font-semibold text-gray-700">Has Gym?</label>
+                <label class="toggle-switch-label">
+                    <input type="checkbox" id="gym">
+                    <span class="toggle-switch-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Predict Button -->
+        <button id="predict-button" class="predict-button w-full mt-10 p-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/50">
+            Predict Price
+        </button>
+
+        <!-- Prediction Result Section -->
+        <div id="result" class="mt-8 text-center bg-blue-50 p-6 rounded-xl border border-blue-200 hidden">
+            <p class="text-sm font-semibold text-blue-800">Predicted Price:</p>
+            <p id="price-display" class="text-5xl font-extrabold text-blue-900 mt-2">₹0</p>
+        </div>
+
+        <!-- A simple message box for alerts, as we avoid using alert() -->
+        <div id="message-box" class="fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center hidden">
+            <div class="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl">
+                <p id="message-text" class="text-center text-gray-800 mb-4 font-semibold"></p>
+                <button onclick="document.getElementById('message-box').classList.add('hidden')" class="w-full p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">OK</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Get elements from the DOM
+        const predictButton = document.getElementById('predict-button');
+        const sqftInput = document.getElementById('sqft');
+        const bedroomsSelect = document.getElementById('bedrooms');
+        const bathroomsSelect = document.getElementById('bathrooms');
+        const parkingInput = document.getElementById('parking_space');
+        const floorsInput = document.getElementById('floors');
+        const mainRoadCheck = document.getElementById('main_road');
+        const guestRoomCheck = document.getElementById('guest_room');
+        const basementCheck = document.getElementById('basement');
+        const swimmingPoolCheck = document.getElementById('swimming_pool');
+        const gardenCheck = document.getElementById('garden');
+        const gymCheck = document.getElementById('gym');
+        const resultContainer = document.getElementById('result');
+        const priceDisplay = document.getElementById('price-display');
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+
+        // Function to show a custom message box instead of alert()
+        function showMessage(message) {
+            messageText.textContent = message;
+            messageBox.classList.remove('hidden');
+            messageBox.classList.add('flex');
+        }
+
+        // Dummy prediction logic
+        // NOTE: In a real application, this would be a call to a backend API
+        // that runs a trained machine learning model.
+        function predictPrice(sqft, bedrooms, bathrooms, parking, floors, mainRoad, guestRoom, basement, swimmingPool, garden, gym) {
+            // A very simple, hardcoded linear model for demonstration
+            // Using approximate values for INR
+            const basePrice = 5000000; // Base price in INR
+            const pricePerSqft = 8000;
+            const bedroomFactor = 250000;
+            const bathroomFactor = 200000;
+            const parkingFactor = 5000; // per sq ft
+            const floorsFactor = 100000; // per floor
+            const mainRoadFactor = 500000;
+            const guestRoomFactor = 300000;
+            const basementFactor = 400000;
+            const swimmingPoolFactor = 1500000;
+            const gardenFactor = 700000;
+            const gymFactor = 500000;
+            
+            let predictedPrice = basePrice + 
+                                 (sqft * pricePerSqft) +
+                                 (bedrooms * bedroomFactor) +
+                                 (bathrooms * bathroomFactor);
+
+            // Add factors for new features
+            if (!isNaN(parking)) {
+                predictedPrice += parking * parkingFactor;
+            }
+            if (!isNaN(floors)) {
+                predictedPrice += floors * floorsFactor;
+            }
+            if (mainRoad) {
+                predictedPrice += mainRoadFactor;
+            }
+            if (guestRoom) {
+                predictedPrice += guestRoomFactor;
+            }
+            if (basement) {
+                predictedPrice += basementFactor;
+            }
+            if (swimmingPool) {
+                predictedPrice += swimmingPoolFactor;
+            }
+            if (garden) {
+                predictedPrice += gardenFactor;
+            }
+            if (gym) {
+                predictedPrice += gymFactor;
+            }
+
+            return predictedPrice;
+        }
+
+        // Event listener for the predict button
+        predictButton.addEventListener('click', () => {
+            // Get user input values
+            const sqft = parseFloat(sqftInput.value);
+            const bedrooms = parseInt(bedroomsSelect.value, 10);
+            const bathrooms = parseInt(bathroomsSelect.value, 10);
+            const parking = parseFloat(parkingInput.value);
+            const floors = parseFloat(floorsInput.value);
+            const mainRoad = mainRoadCheck.checked;
+            const guestRoom = guestRoomCheck.checked;
+            const basement = basementCheck.checked;
+            const swimmingPool = swimmingPoolCheck.checked;
+            const garden = gardenCheck.checked;
+            const gym = gymCheck.checked;
+
+            // Basic input validation
+            if (isNaN(sqft) || sqft <= 0) {
+                showMessage('Please enter a valid square footage.');
+                return;
+            }
+            if (isNaN(floors) || floors <= 0) {
+                showMessage('Please enter a valid number of floors.');
+                return;
+            }
+
+            // Calculate the predicted price
+            const predicted = predictPrice(sqft, bedrooms, bathrooms, parking, floors, mainRoad, guestRoom, basement, swimmingPool, garden, gym);
+
+            // Format the number as a currency string for Indian Rupees
+            const formattedPrice = new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 0
+            }).format(predicted);
+
+            // Display the result
+            priceDisplay.textContent = formattedPrice;
+            resultContainer.classList.remove('hidden');
+
+            // Scroll the result into view for better UX on mobile
+            resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+    </script>
+</body>
+</html>
